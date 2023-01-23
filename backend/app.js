@@ -1,9 +1,9 @@
-const path = require("path");
 const express = require("express");
 const app = express();
+require("dotenv").config({ path: "./config/.env.example" });
+require("./config/Mongo");
 const userRoutes = require("./routes/user.routes");
-const dotenv = require("dotenv");
-dotenv.config();
+const path = require("path");
 
 
 app.use((req, res, next) => {
@@ -19,12 +19,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.set('views', pathJoin(__dirname, 'views'));
-// app.set('view engine', 'ejs');
+app.use(express.json());
 
 app.use("/images", express.static(path.join(__dirname, 'images')));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", userRoutes);
 

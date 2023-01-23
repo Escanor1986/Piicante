@@ -1,4 +1,14 @@
 {
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
   "dependencies": {
     "colors": "^1.4.0",
     "dotenv": "^16.0.3",
@@ -8,14 +18,5 @@
     "morgan": "^1.10.0",
     "nodemon": "^2.0.20",
     "path": "^0.12.7"
-  },
-  "scripts": {
-    "start": "nodemon app.js"
-  },
-  "name": "backend",
-  "version": "1.0.0",
-  "main": "app.js",
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  }
 }
