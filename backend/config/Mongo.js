@@ -4,10 +4,10 @@ mongoose.set("strictQuery", false);
 mongoose
   .connect(process.env.ID)
   .then(() => {
-    console.log("Connexion ok !");
+    console.log("Connexion à MongoDB ok !");
   })
   .catch((err) => {
-    console.log(err + "Problème de connexion ! Vérifiez votre identifiant et votre mot de passe !");
+    console.log(err + "Problème de connexion à MongoDB !");
   });
 
 

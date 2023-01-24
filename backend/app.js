@@ -1,10 +1,10 @@
+const path = require("path");
 const express = require("express");
 const app = express();
 require("dotenv").config({ path: "./config/.env.example" });
 require("./config/Mongo");
 const userRoutes = require("./routes/user.routes");
-const path = require("path");
-
+const errorHandler = require("errorhandler"); // Permet de retourner une page HTML avec tous les détails de l'erreur
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -20,65 +20,25 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-
-app.use("/images", express.static(path.join(__dirname, 'images')));
-
+app.use("/public", express.static(path.join(__dirname, "public"))); // va voir les requêtes venant du côté client (images, javascript, etc...)
 app.use("/api/auth", userRoutes);
 
+// Middelware de Gestion des erreurs pour remplacer celui d'express
+
+if (process.env.NODE_ENV === "development") {
+  app.use(errorHandler()); // ce résultat ne sera pas montré en production car il nous montre le rapport d'erreur de la stack
+}
+
+app.use((err, req, res, next) => {
+  console.log(process.env.NODE_ENV);
+  const env = process.env.NODE_ENV;
+  if (env === "production") {
+    // en json retourne message d'erreur dans la console, pour une application serveur, on rendra une page d'erreur en html
+    res.status(500).json({
+      code: err.code || 500,
+      message: err.message,
+    });
+  }
+});
+
 module.exports = app;
-// // Routes
-
-// app
-//   .route("/api/auth", (req, res, next) => {
-//     next();
-//   })
-//   .post("/signup", (req, res) => {
-//     res.send("api");
-//   })
-//   .post("/login", (req, res) => {
-//     res.send("api");
-//   });
-
-// app
-//   .route("/api/sauces", (req, res, next) => {
-//     next();
-//   })
-//   .get((req, res) => {
-//     res.send("api");
-//   })
-//   .get("/:id", (req, res) => {
-//     res.send("api");
-//   })
-//   .post((req, res) => {
-//     res.send("api");
-//   })
-//   .put("/:id", (req, res) => {
-//     res.send("api");
-//   })
-//   .delete("/:id", (req, res) => {
-//     res.send("api");
-//   })
-//   .post("/:id/like", (req, res) => {
-//     res.send("api");
-//   });
-
-// // Middleware
-
-// app.use((req, res, next) => {
-//   console.log("Requête reçue !");
-//   next();
-// });
-
-// app.use((req, res, next) => {
-//   res.status(201);
-//   next();
-// });
-
-// app.use((req, res, next) => {
-//   res.json({ message: "Votre requête a bien été reçue !" });
-//   next();
-// });
-
-// app.use((req, res, next) => {
-//   console.log("Réponse envoyée avec succès !");
-// });
