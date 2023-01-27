@@ -13,7 +13,7 @@ module.exports = (req, res, next) => {
     // Récupération du user décodé
     const userID = decodedToken.userID;
     // Rajout de l'id du user à l'objet de la requête
-    req.auth = { userID };
+    req.auth = { userID: userID };
     // en cas d'un userid exsitant, et de plus, si les id sont != |e|
     // le token et la query alors on renvoi une erreure
     // dans le cas contraire ce sera validé
@@ -22,9 +22,9 @@ module.exports = (req, res, next) => {
     } else {
       next();
     }
-  } catch (e) {
+  } catch (error) {
     // En cas d'erreur on renvoie un sttaus 401 à l'utilisateur
-    res.status(401).json({ e });
+    res.status(401).json({ error });
   }
 };
 

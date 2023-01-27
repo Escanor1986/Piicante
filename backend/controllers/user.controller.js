@@ -17,7 +17,7 @@ const emailValidator = require("email-validator"); // fonctionne "comme une rege
 
 
 // Concernant le SIGNUP
-exports.signup = async (req, res, next) => {
+exports.signup = (req, res, next) => {
   // checking du password avec la méthode validate
   const checkedPassword = passwordSchema.validate(req.body.password);
   // checking de l'email avec validator
@@ -55,7 +55,7 @@ exports.signup = async (req, res, next) => {
 };
 
 // Concernant le LOGIN
-exports.login = async (req, res, next) => {
+exports.login = (req, res, next) => {
   // récupération de l'adresse email du module de l'utilisateur avec la méthode "findOne" (utlisable également dans le CLI)
   User.findOne({ email: req.body.email })
     .then((user) => {
@@ -83,7 +83,7 @@ exports.login = async (req, res, next) => {
                   // on récupère le secret depuis le fichier caché .env
                   process.env.SECRET,
                   {
-                    expiresIn: "1hrs",
+                    expiresIn: "24hrs",
                   }
                 ),
               });

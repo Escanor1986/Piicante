@@ -1,5 +1,7 @@
-const userCtrl = require("../controllers/user.controller");
+const express = require('express');
 const router = require('express').Router();
+const jwtAuth = require('../config/jwt.config');
+const userCtrl = require("../controllers/user.controller");
 
 router.post("/signup", userCtrl.signup);
 router.post("/login", userCtrl.login);
@@ -13,7 +15,5 @@ router.get("/", (req, res, next) => {
     }
     res.end();
 });
-
-
 
 module.exports = router;
