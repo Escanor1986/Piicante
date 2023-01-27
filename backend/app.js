@@ -1,9 +1,21 @@
 const path = require("path");
 const express = require("express");
-const app = express();
-require("dotenv").config({ path: "./config/.env.example" });
-require("./config/Mongo");
 const userRoutes = require("./routes/user.routes");
+const cookieParser = require('cookie-parser');
+const app = express();
+// Helmet est utilisé pour sécuriser les headers http. https://expressjs.com/fr/advanced/best-practice-security.html
+const helmet = require("helmet");
+const bodyParser = require("body-parser");
+//on export app vers config
+exports.app = app;
+
+app.use(cookieParser());
+require('./config/jwt.config');
+
+// Connexion à mongo &  express-session
+require("dotenv").config({ path: "./config/.env" });
+require("./config/mongo.config");
+
 const errorHandler = require("errorhandler"); // Permet de retourner une page HTML avec tous les détails de l'erreur
 
 app.use((req, res, next) => {
@@ -19,12 +31,14 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(bodyParser.json());
+app.use(helmet());
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use("/public", express.static(path.join(__dirname, "public"))); // va voir les requêtes venant du côté client (images, javascript, etc...)
 app.use("/api/auth", userRoutes);
 
 // Middelware de Gestion des erreurs pour remplacer celui d'express
-
 if (process.env.NODE_ENV === "development") {
   app.use(errorHandler()); // ce résultat ne sera pas montré en production car il nous montre le rapport d'erreur de la stack
 }
@@ -41,4 +55,5 @@ app.use((err, req, res, next) => {
   }
 });
 
+//on exporte app pour l'utiliser ailleurs
 module.exports = app;
