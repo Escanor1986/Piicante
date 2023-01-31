@@ -61,29 +61,27 @@ exports.login = (req, res, next) => {
     .then((user) => {
       // Si l'email n'est pas encore renseigné dans la base données
       if (!user) {
-        console.log(
-          'Adresse email inconnue ! Pas encore de compte utilisateur ? Enregistrez-vous via l\'onglet "SIGNUP" pour commencer ...'
-        );
+        console.log("Utilisateur non trouvé !");
         return res.status(401).json({ error });
       } else {
         // dans le cas contraire, on compare simplement avec "bcrypt" le mdp user enregistré lors du signup avec celui encodé dans le login
         bcrypt
-          .compare(req.body.password, req.password)
-          .then((checked) => {
-            if (!checked) {
-              console.log("Mot de passe NON valide !");
+          .compare(req.body.password, user.password)
+          .then((valid) => {
+            if (!valid) {
+              console.log("Mot de passe incorrect !");
               return res.status(401).json({ error });
             } else {
               // Dans le cadre d'une validation après comparaison, on renvoie un status 201
               res.status(200).json({
-                userID: user._id, // renvoie de l'userID depuis config
+                userId: user._id, // renvoie de l'userID depuis config
                 token: jwt.sign(
                   // renvoie un token signé
-                  { userID: user._id },
+                  { userId: user._id },
                   // on récupère le secret depuis le fichier caché .env
                   process.env.SECRET,
                   {
-                    expiresIn: "24hrs",
+                    expiresIn: "24h"
                   }
                 ),
               });

@@ -11,19 +11,19 @@ module.exports = (req, res, next) => {
     // secret algo symétrique généré depuis UUID generator tools
     const decodedToken = jwt.verify(token, process.env.SECRET);
     // Récupération du user décodé
-    const userID = decodedToken.userID;
+    const userId = decodedToken.userId;
     // Rajout de l'id du user à l'objet de la requête
-    req.auth = { userID: userID };
+    req.auth = { userId };
     // en cas d'un userid exsitant, et de plus, si les id sont != |e|
     // le token et la query alors on renvoi une erreure
     // dans le cas contraire ce sera validé
-    if (req.body.userID && req.body.userID !== userID) {
+    if (req.body.userId && req.body.userId !== userId) {
       throw error;
     } else {
       next();
     }
   } catch (error) {
-    // En cas d'erreur on renvoie un sttaus 401 à l'utilisateur
+    // En cas d'erreur on renvoie un status 401 à l'utilisateur
     res.status(401).json({ error });
   }
 };
@@ -33,9 +33,9 @@ module.exports = (req, res, next) => {
 // const createJwtToken = (user) => {
 //     const jwtToken = jwt.sign(
 //       {
-//         sub: user._id.toString(),
+//         sub:id || user._id.toString(),
 //       },
-//       secret
+//       secret, { expiresIn: "24h" }
 //     );
 //     return jwtToken;
 //   };
@@ -46,7 +46,7 @@ module.exports = (req, res, next) => {
 //   const token = req.cookies.jwt;
 //   if (token) {
 //     try {
-//       const decodedToken = jwt.verify(token, secret);
+//       const decodedToken = jwt.verify(token, secret, { ignoreExpiration: true });
 //       const user = await findUserPerId(decodedToken.sub);
 //       if (user) {
 //         req.user = user;

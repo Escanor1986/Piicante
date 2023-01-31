@@ -64,7 +64,6 @@ server.listen(port);
 //   res.end();
 // }).listen(80);
 
-
 // // Encryptage ssl avec passage vers https avec clé et certificat de sécurité
 // const server = https.createServer(
 //   {
