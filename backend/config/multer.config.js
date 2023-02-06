@@ -43,22 +43,24 @@ const storage = multer.diskStorage({
     callback(null, name + Date.now() + "." + extension);
   },
 });
-//on invoque une nouvelle fonction avec multer pour paramètrer l'upload de fichiers images
-const upload = multer({
-  // on limite la taille des fichiers pour l'uppload à 1 MO !
-  limits: { fileSize: 1 * 1000 * 1000 },
-  // ici on exclus le téléchargement de fichier au format PDF avec la fonction "fileFilter"
-  fileFilter: (req, file, callback) => {
-    console.log(file);
-    if (file.mimetype !== "application/pdf") {
-      return callback(null, false);
-    } else {
-      callback(null, true);
-    }
-  },});
-  
-module.exports = multer({ storage, upload }).single("image");
+
+module.exports = multer({ storage }).single("image");
 
 // Attention ! Lorsque destination est une fonction et non une chaîne de caractères,
 // il faut que les dossiers existent avant de pouvoir y stocker des fichiers.
 // Si on utilise une chaîne de caractères, multer créera les dossiers pour nous.
+
+//on invoque une nouvelle fonction avec multer pour paramètrer l'upload de fichiers images
+// const upload = multer({
+//   // on limite la taille des fichiers pour l'uppload à 1 MO !
+//   limits: { fileSize: 1 * 1000 * 1000 },
+//   // ici on exclus le téléchargement de fichier au format PDF avec la fonction "fileFilter"
+//   fileFilter: (req, file, callback) => {
+//     console.log(file);
+//     if (file.mimetype !== "application/pdf") {
+//       return callback(null, false);
+//     } else {
+//       callback(null, true);
+//     }
+//   },});
+  

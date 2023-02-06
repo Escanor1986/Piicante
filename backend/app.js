@@ -3,16 +3,21 @@ const express = require("express");
 const app = express();
 const saucesRoutes = require("./routes/sauces.routes");
 const userRoutes = require("./routes/user.routes");
-const cookieParser = require('cookie-parser');
+const cookieParser = require("cookie-parser");
 // Helmet est utilisé pour sécuriser les headers http. https://expressjs.com/fr/advanced/best-practice-security.html
 const helmet = require("helmet");
 const bodyParser = require("body-parser");
 //on export app vers config
 exports.app = app;
 
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+    crossOriginReadBlocking: false,
+  })
+);
 app.use(cookieParser());
-require('./config/auth');
+require("./config/auth");
 
 // Connexion à mongo &  express-session
 require("dotenv").config({ path: "./config/.env" });
@@ -58,7 +63,7 @@ app.use((err, req, res, next) => {
 });
 
 app.use((req, res, next) => {
-  console.log('Requête reçue !');
+  console.log("Requête reçue !");
   next();
 });
 
@@ -68,13 +73,15 @@ app.use((req, res, next) => {
 });
 
 app.use((req, res, next) => {
-  res.json({ message: 'Votre requête a bien été reçue !' });
+  res.json({ message: "Votre requête a bien été reçue !" });
   next();
 });
 
 app.use((req, res, next) => {
-  console.log('Réponse envoyée avec succès !');
+  console.log("Réponse envoyée avec succès !");
 });
 
 //on exporte app pour l'utiliser ailleurs
 module.exports = app;
+
+
