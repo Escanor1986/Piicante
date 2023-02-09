@@ -1,9 +1,13 @@
+// colors permet d'ajouter des couleurs dans les messages au niveau de la console
+// Ce peut être utile afin de distinguer plus facilement les catégories ciblées
+// et permettre un debbugage plus aisé
 const colors = require("colors");
 // On récupère d'abord le modèle des sauces depuis son module
 const Sauce = require("../models/sauces.models");
 // On initialise filesystem "fs" afin de préparer l'utilisation de fichier
 // notamment pour la suppression et le remplacement d'image dans les modifications de la sauce
-const fs = require("fs");
+const fs = require("fs"); // librairie native de nodejs pour avoir accès aux fichiers du système (il sagit d'un très gros module)
+// cette fonctionnalité n'étant pas prévue avec JavaScript ES6, nous en avons besoin côté serveur
 
 // Concernant la récupération de TOUTES les sauces *****************************************************
 // *****************************************************************************************************
@@ -75,7 +79,9 @@ exports.deleteSauce = (req, res, next) => {
       // On vérifie que l'id de l'utilisateur EST LE MÊME que celui correspondant au TOKEN !
       if (sauce.userId !== req.auth.userId) {
         // si l'utilisateur n'est pas autorisé, on lui renvoie une status 403
-        return res.status(403).json(colors.red("⛔ Requête non autorisée ! ⛔"));
+        return res
+          .status(403)
+          .json(colors.red("⛔ Requête non autorisée ! ⛔"));
         // si il y a bien un fichier ("file") image avec la tentative de modification
       } else {
         // Localisation et sélection de l'image à supprimer (elle est séparée de son objet initiale avec .split)
@@ -83,7 +89,11 @@ exports.deleteSauce = (req, res, next) => {
         const fileName = sauce.imageUrl.split("/images/")[1];
         // Suppression du fichier image voué à être remplacer avec "fs.unlink"
         // confer https://www.geeksforgeeks.org/node-js-fs-unlink-method/
-        fs.unlink(`images/${fileName}`, () => {
+        // On met toujours l'erreur en premier paramètre dans la fonction callback https://nodejs.org/api/fs.html#fsunlinkpath-callback
+        fs.unlink(`images/${fileName}`, (err) => {
+          // si erreur on throw l'erreur sinon on passe à la ligne suivante
+          if (err) throw err;
+          console.log(colors.red("Votre image précédente a été supprimée"));
           // Suppression de la sauce dans la base de données mongoDB
           Sauce.deleteOne({ _id: req.params.id })
             .then(() =>
@@ -120,10 +130,14 @@ exports.modifySauce = (req, res, next) => {
     } else {
       // Localisation et sélection de l'image à remplacer (elle est séparée de son objet initiale avec .split)
       // confer https://www.geeksforgeeks.org/node-js-split-function/
-      const imageName = sauce.imageUrl.split("/images/")[1];
+      const fileName = sauce.imageUrl.split("/images/")[1];
       // Suppression du fichier image voué à être remplacer avec "fs.unlink"
       // confer https://www.geeksforgeeks.org/node-js-fs-unlink-method/
-      fs.unlink(`images/${imageName}`, () => {
+      // On met toujours l'erreur en premier paramètre dans la fonction callback https://nodejs.org/api/fs.html#fsunlinkpath-callback
+      fs.unlink(`images/${fileName}`, (err) => {
+        // si erreur on throw l'erreur sinon on passe à la ligne suivante
+        if (err) throw err;
+        console.log(colors.red("Votre image précédente a été supprimée"));
         // Vérification de la présence d'un fichier au sein de la requête
         const sauceObject = req.file // littéralement si req.file est TRUE
           ? // SI sauceObject = req.file... ALORS...

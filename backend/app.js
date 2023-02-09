@@ -1,4 +1,8 @@
+// path est un module natif de nodejs, il permet de d'effectuer des opérations sur les fichiers et dossiers
+// 
 const path = require("path");
+// express est un framework de nodejs permettant la création du serveur beaucoup plus facilement
+// la création d'un serveuren node pure serait très laborieux, express nous facilite la tâche 
 const express = require("express");
 const app = express();
 const saucesRoutes = require("./routes/sauces.routes");
@@ -10,7 +14,7 @@ const bodyParser = require("body-parser");
 //on export app vers config
 exports.app = app;
 
-app.use(
+app.use( // Résolution du problème de CORP rencontré notamment avec les images des sauces
   helmet({
     crossOriginResourcePolicy: false,
     crossOriginReadBlocking: false,
