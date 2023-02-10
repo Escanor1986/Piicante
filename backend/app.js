@@ -30,21 +30,34 @@ require("./config/mongo.config");
 const errorHandler = require("errorhandler"); // Permet de retourner une page HTML avec tous les détails de l'erreur
 
 app.use((req, res, next) => {
+  // "Access-Control-Allow-Origin" va permettre au nvaigateur de comparer
   res.setHeader("Access-Control-Allow-Origin", "*");
+  // "Access-Control-Allow-Headers" va contenir tous les headers demandés
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content, Accept, Content-Type, Authorization"
   );
+  // "Access-Control-Allow-Methods" ca contenir la/les méthodes de la/des requête(s) demandé(es)
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, DELETE, PATCH, OPTIONS"
   );
+  res.setHeader(
+    // Pour autant que les requête soit authorisée par le serveur, 
+    // il va mettre en cache des données pour la durée déterminée afin de ne pas
+    // devoir effectuer une nouvelle requête de type "preflight" (Options) à chaque requête au serveur
+    "Acces-Control-Max-Age", 80000
+  )
   next();
 });
 
 app.use(bodyParser.json());
+app.use(express.urlencoded({extended: true}));
 app.use(express.json());
-app.use("/images", express.static(path.join(__dirname, "images"))); // va voir les requêtes venant du côté client (images, javascript, etc...)
+// va voir les requêtes venant du côté client (images, javascript, etc...)
+// express.static est un des trois middleware "built in" de Express
+// Dans ce cas il retourne une image lorsque l'on en a besoin sans devoirs créer une route pour chaque image
+app.use("/images", express.static(path.join(__dirname, "images"))); 
 app.use("/api/auth", userRoutes);
 app.use("/api/sauces", saucesRoutes);
 

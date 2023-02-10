@@ -17,6 +17,7 @@ const emailValidator = require("email-validator"); // fonctionne "comme une rege
 
 
 // Concernant le SIGNUP
+// !!! req et res sont des "flux" mais également des "eventEmitter" !!! 
 exports.signup = (req, res, next) => {
   // checking du password avec la méthode validate
   const checkedPassword = passwordSchema.validate(req.body.password);
