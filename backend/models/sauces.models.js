@@ -44,12 +44,6 @@ const SauceSchema = schema(
   }
 );
 
-// SauceSchema.pre("save", function () {
-//   return SauceSchema.countDocuments()
-//     .exec()
-//     .then((nbr) => (this.index = nbr + 1));
-// });
-
 const Sauces = mongoose.model("Sauce", SauceSchema);
 
 module.exports = Sauces;

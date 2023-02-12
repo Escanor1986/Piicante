@@ -11,6 +11,9 @@ const userIdSchema = schema({
   password: { type: String, required: [true, "Un mot de passe est requis"] },
 
   Username: String,
+},
+{
+  timestamps: true, // représente la durée de temps qui s'est écoulée depuis un moment "m"
 });
 
 userIdSchema.plugin(uniqueValidator);

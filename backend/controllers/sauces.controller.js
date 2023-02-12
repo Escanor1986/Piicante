@@ -92,7 +92,7 @@ exports.deleteSauce = (req, res, next) => {
         // On met toujours l'erreur en premier paramètre dans la fonction callback https://nodejs.org/api/fs.html#fsunlinkpath-callback
         fs.unlink(`images/${fileName}`, (err) => {
           // si erreur on throw l'erreur sinon on passe à la ligne suivante
-          if (err) throw err;
+          if (!!err) throw err;
           console.log(colors.red("Votre image précédente a été supprimée"));
           // Suppression de la sauce dans la base de données mongoDB
           Sauce.deleteOne({ _id: req.params.id })
@@ -136,7 +136,7 @@ exports.modifySauce = (req, res, next) => {
       // On met toujours l'erreur en premier paramètre dans la fonction callback https://nodejs.org/api/fs.html#fsunlinkpath-callback
       fs.unlink(`images/${fileName}`, (err) => {
         // si erreur on throw l'erreur sinon on passe à la ligne suivante
-        if (err) throw err;
+        if (!!err) throw err; // on teste l'existence même de la variable erreur
         console.log(colors.red("Votre image précédente a été supprimée"));
         // Vérification de la présence d'un fichier au sein de la requête
         const sauceObject = req.file // littéralement si req.file est TRUE

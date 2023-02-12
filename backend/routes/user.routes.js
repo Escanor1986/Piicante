@@ -1,6 +1,6 @@
 const express = require('express');
 const router = require('express').Router();
-const jwtAuth = require('../config/auth');
+const session = require("express-session"); // Package utilisé pour sauvegarder les sessions sur base d'un id (venant (ou pas) des cookies) dans notre base données (atlas par exemple)
 const raterLimit = require("express-rate-limit");
 
 const limiter = raterLimit({

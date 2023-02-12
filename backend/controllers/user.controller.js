@@ -15,9 +15,8 @@ const User = require("../models/user.models");
 const passwordSchema = require("../config/password.config");
 const emailValidator = require("email-validator"); // fonctionne "comme une regexp"
 
-
 // Concernant le SIGNUP
-// !!! req et res sont des "flux" mais également des "eventEmitter" !!! 
+// !!! req et res sont des "flux" mais également des "eventEmitter" !!!
 exports.signup = (req, res, next) => {
   // checking du password avec la méthode validate
   const checkedPassword = passwordSchema.validate(req.body.password);
@@ -25,14 +24,14 @@ exports.signup = (req, res, next) => {
   const checkedEmail = emailValidator.validate(req.body.email);
   // on vérifie d'abord si le password et l'email ne corresponde pas aux exigences/critères préétablis
   if (!checkedEmail && !checkedPassword) {
-    console.log(
-      "Email et/ou Password invalide !"
-    );
+    console.log("Email et/ou Password invalide !");
   } else {
+    // Version mineur simplifié de création de "sel" pour le hashage
+    const salt = bcrypt.genSaltSync(10);
+    // on hash le mot de passe 10x avec un "salt" paramètré à 10
+    // (+ de 10 risque de ralentir la machine suite à augmentation calcul exponentiel niveau processeur)
     bcrypt
-      // on hash le mot de passe 10x avec un "salt" paramètré à 10
-      // (+ de 10 risque de ralentir la machine suite à augmentation calcul exponentiel niveau processeur)
-      .hash(req.body.password, 10)
+      .hash(req.body.password, salt)
       .then((hash) => {
         // Création du module User sur base du Schema importé depuis models
         const user = new User({
@@ -82,15 +81,15 @@ exports.login = (req, res, next) => {
                   // on récupère le secret depuis le fichier caché .env
                   process.env.SECRET,
                   {
-                    expiresIn: "24h"
+                    expiresIn: "24h",
                   }
                 ),
               });
             }
-          })  // internal server error
+          }) // internal server error
           .catch((error) => res.status(500).json({ error }));
       }
-    })  // internal server error
+    }) // internal server error
     .catch((error) => res.status(500).json({ error }));
 };
 

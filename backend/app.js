@@ -7,6 +7,9 @@ const express = require("express");
 const app = express();
 const saucesRoutes = require("./routes/sauces.routes");
 const userRoutes = require("./routes/user.routes");
+// Middelware permettant l'utilisation de cookies côté client
+// A utiliser en combinaison de session afin de conserver les données
+// côté serveur au lieu du côté client pour plus de sécurité
 const cookieParser = require("cookie-parser");
 // Helmet est utilisé pour sécuriser les headers http. https://expressjs.com/fr/advanced/best-practice-security.html
 const helmet = require("helmet");
@@ -20,6 +23,7 @@ app.use( // Résolution du problème de CORP rencontré notamment avec les image
     crossOriginReadBlocking: false,
   })
 );
+
 app.use(cookieParser());
 require("./config/auth");
 
@@ -43,7 +47,7 @@ app.use((req, res, next) => {
     "GET, POST, PUT, DELETE, PATCH, OPTIONS"
   );
   res.setHeader(
-    // Pour autant que les requête soit authorisée par le serveur, 
+    // Pour autant que les requête soit autorisée par le serveur, 
     // il va mettre en cache des données pour la durée déterminée afin de ne pas
     // devoir effectuer une nouvelle requête de type "preflight" (Options) à chaque requête au serveur
     "Acces-Control-Max-Age", 80000
@@ -52,8 +56,8 @@ app.use((req, res, next) => {
 });
 
 app.use(bodyParser.json());
-app.use(express.urlencoded({extended: true}));
-app.use(express.json());
+app.use(express.urlencoded({extended: true})); // permet d'extraire les différents req.body
+app.use(express.json()); // permet d'extraire les différents req.body
 // va voir les requêtes venant du côté client (images, javascript, etc...)
 // express.static est un des trois middleware "built in" de Express
 // Dans ce cas il retourne une image lorsque l'on en a besoin sans devoirs créer une route pour chaque image
