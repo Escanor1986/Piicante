@@ -47,36 +47,3 @@ server.on("listening", () => {
 
 server.listen(port);
 
-// const https = require("https");
-
-// ***********************************
-
-// Création d'un server http de transit aller simple vers le serveur https
-
-// http.createServer((req, res) => {
-//   console.log("http server");
-//   console.log({
-//     host: req.headers.host,
-//     url: req.url,
-//   });
-//   // "301" est une redirection permanente vers le https
-//   res.writeHead("301", { Location: `https://${req.headers.host}${req.url}` });
-//   res.end();
-// }).listen(80);
-
-// // Encryptage ssl avec passage vers https avec clé et certificat de sécurité
-// const server = https.createServer(
-//   {
-//     // on récupère la clé générée avec openssl
-//     key: fs.readFileSync(path.join(__dirname, "./ssl/local.key")),
-//     // on récupère le certificat généré avec openssl
-//     cert: fs.readFileSync(path.join(__dirname, "./ssl/local.crt")),
-//   },
-//   app
-// );
-
-// ATTENTION au fait que chrome ou firefox ne vont pas accepter de certificat signé
-// signé par nous même. Dans la logique, il doit être signé par une autorité de
-// certification validée. Il faut donc l'ajouter manuellement dans les certificats d'autorité
-// et les validés nous mêmes. Dans ce cadre précis, ce serveur ne fonctionnera qu'en local
-// et donc en développement, NON en production !

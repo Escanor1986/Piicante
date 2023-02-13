@@ -13,7 +13,7 @@ const userIdSchema = schema({
   Username: String,
 },
 {
-  timestamps: true, // représente la durée de temps qui s'est écoulée depuis un moment "m"
+  timestamps: true,
 });
 
 userIdSchema.plugin(uniqueValidator);

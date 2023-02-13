@@ -2,9 +2,4 @@
 node_modules
 .env
 images
-ssl/local.csr
-ssl/local.ext
-ssl/monCA.key
-ssl/monCA.pem
-ssl/monCA.srl
-ssl/-out
+

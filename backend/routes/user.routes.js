@@ -1,11 +1,12 @@
 const express = require('express');
 const router = require('express').Router();
-const session = require("express-session"); // Package utilisé pour sauvegarder les sessions sur base d'un id (venant (ou pas) des cookies) dans notre base données (atlas par exemple)
+const session = require("express-session"); 
 const raterLimit = require("express-rate-limit");
 
+// Limite le nombre de tentative de connexion sur le nombre et la durée
 const limiter = raterLimit({
-    windowMs: 6 * 60 * 1000, // 6 minutes
-    max: 60, // 60 essais
+    windowMs: 6 * 60 * 1000, 
+    max: 60, 
 });
 
 const userCtrl = require("../controllers/user.controller");

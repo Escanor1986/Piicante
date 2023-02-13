@@ -1,23 +1,15 @@
-// path est un module natif de nodejs, il permet de d'effectuer des opérations sur les fichiers et dossiers
-// 
 const path = require("path");
-// express est un framework de nodejs permettant la création du serveur beaucoup plus facilement
-// la création d'un serveuren node pure serait très laborieux, express nous facilite la tâche 
 const express = require("express");
 const app = express();
 const saucesRoutes = require("./routes/sauces.routes");
 const userRoutes = require("./routes/user.routes");
-// Middelware permettant l'utilisation de cookies côté client
-// A utiliser en combinaison de session afin de conserver les données
-// côté serveur au lieu du côté client pour plus de sécurité
 const cookieParser = require("cookie-parser");
-// Helmet est utilisé pour sécuriser les headers http. https://expressjs.com/fr/advanced/best-practice-security.html
 const helmet = require("helmet");
 const bodyParser = require("body-parser");
 //on export app vers config
 exports.app = app;
 
-app.use( // Résolution du problème de CORP rencontré notamment avec les images des sauces
+app.use( 
   helmet({
     crossOriginResourcePolicy: false,
     crossOriginReadBlocking: false,
@@ -31,7 +23,8 @@ require("./config/auth");
 require("dotenv").config({ path: "./config/.env" });
 require("./config/mongo.config");
 
-const errorHandler = require("errorhandler"); // Permet de retourner une page HTML avec tous les détails de l'erreur
+const errorHandler = require("errorhandler");
+// Permet de retourner une page HTML avec tous les détails de l'erreur
 
 app.use((req, res, next) => {
   // "Access-Control-Allow-Origin" va permettre au nvaigateur de comparer
@@ -56,25 +49,22 @@ app.use((req, res, next) => {
 });
 
 app.use(bodyParser.json());
-app.use(express.urlencoded({extended: true})); // permet d'extraire les différents req.body
-app.use(express.json()); // permet d'extraire les différents req.body
-// va voir les requêtes venant du côté client (images, javascript, etc...)
-// express.static est un des trois middleware "built in" de Express
-// Dans ce cas il retourne une image lorsque l'on en a besoin sans devoirs créer une route pour chaque image
+app.use(express.urlencoded({extended: true}));
+app.use(express.json());
 app.use("/images", express.static(path.join(__dirname, "images"))); 
 app.use("/api/auth", userRoutes);
 app.use("/api/sauces", saucesRoutes);
 
 // Middelware de Gestion des erreurs pour remplacer celui d'express
 if (process.env.NODE_ENV === "development") {
-  app.use(errorHandler()); // ce résultat ne sera pas montré en production car il nous montre le rapport d'erreur de la stack
+  app.use(errorHandler());
+  // ce résultat ne sera pas montré en production car il nous montre le rapport d'erreur de la stack
 }
 
 app.use((err, req, res, next) => {
   console.log(process.env.NODE_ENV);
   const env = process.env.NODE_ENV;
   if (env === "production") {
-    // en json retourne message d'erreur dans la console, pour une application serveur, on rendra une page d'erreur en html
     res.status(500).json({
       code: err.code || 500,
       message: err.message,
