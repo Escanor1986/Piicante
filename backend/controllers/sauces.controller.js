@@ -63,9 +63,7 @@ exports.deleteSauce = (req, res, next) => {
           .json(colors.red("⛔ Requête non autorisée ! ⛔"));
       } else {
         const fileName = sauce.imageUrl.split("/images/")[1];
-        fs.unlink(`images/${fileName}`, (err) => {
-          if (!!err) throw err;
-          console.log(colors.red("Votre image précédente a été supprimée"));
+        fs.unlink(`images/${fileName}`, () => {
           Sauce.deleteOne({ _id: req.params.id })
             .then(() =>
               res
@@ -95,9 +93,7 @@ exports.modifySauce = (req, res, next) => {
       return res.status(403).json(colors.red("⛔ Requête non autorisée ! ⛔"));
     } else {
       const fileName = sauce.imageUrl.split("/images/")[1];
-      fs.unlink(`images/${fileName}`, (err) => {
-        if (!!err) throw err;
-        console.log(colors.red("Votre image précédente a été supprimée"));
+      fs.unlink(`images/${fileName}`, () => {
         const sauceObject = req.file
           ? // SI sauceObject = req.file... ALORS...
             {

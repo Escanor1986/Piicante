@@ -6,13 +6,13 @@ const userRoutes = require("./routes/user.routes");
 const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const bodyParser = require("body-parser");
+const util = require("util");
 //on export app vers config
 exports.app = app;
 
-app.use( 
+app.use(
   helmet({
     crossOriginResourcePolicy: false,
-    crossOriginReadBlocking: false,
   })
 );
 
@@ -40,18 +40,19 @@ app.use((req, res, next) => {
     "GET, POST, PUT, DELETE, PATCH, OPTIONS"
   );
   res.setHeader(
-    // Pour autant que les requête soit autorisée par le serveur, 
+    // Pour autant que les requête soit autorisée par le serveur,
     // il va mettre en cache des données pour la durée déterminée afin de ne pas
     // devoir effectuer une nouvelle requête de type "preflight" (Options) à chaque requête au serveur
-    "Acces-Control-Max-Age", 80000
-  )
+    "Acces-Control-Max-Age",
+    80000
+  );
   next();
 });
 
 app.use(bodyParser.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use("/images", express.static(path.join(__dirname, "images"))); 
+app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/api/auth", userRoutes);
 app.use("/api/sauces", saucesRoutes);
 
@@ -71,6 +72,19 @@ app.use((err, req, res, next) => {
     });
   }
   next();
+});
+
+app.use((err, req, res, next) => {
+  console.log(
+    util.inspect(err, {
+      compact: false,
+      depth: 5,
+      breakLength: 80,
+      colors: true,
+    })
+  );
+  res.status(500).redirect("/");
+  next;
 });
 
 app.use((req, res, next) => {
@@ -94,5 +108,3 @@ app.use((req, res, next) => {
 
 //on exporte app pour l'utiliser ailleurs
 module.exports = app;
-
-
