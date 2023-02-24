@@ -2,28 +2,40 @@ const passwordValidator = require("password-validator");
 const passwordSchema = new passwordValidator();
 
 // Modèle du mot de passe à encodé au signup et au login
+// protection contre les attaques par force brute et les attaques par injection de code
 passwordSchema
   .is()
-  .min(8) // Minimum 8 caractères dans le mot de passe
+  .min(8)
   .is()
-  .max(30) // Mximum 20 caractères dans le mots de passe
+  .max(100)
   .has()
-  .uppercase(1) // Doit contenir une majuscule
+  .uppercase(1)
   .has()
-  .lowercase() // contiendra des miniscules pour le reste des carcatères disponibles
+  .lowercase()
   .has()
-  .symbols(1) // Doit contenir un symbole
+  .symbols()
   .has()
   .not()
-  .digits() // ne peut pas contenir de digit
+  .digits()
   .is()
-  .not(/[\]()[{}<>@]/) // ne peut pas contenir ces caractères
+  .not(/[\]()[{}<>@'"\/\\|]/)
   .has()
   .not()
-  .spaces() // Ne peut pas avoir d'espace entre les caractères
+  .spaces()
   .is()
   .not()
-  .oneOf(["Passw0rd", "Password123", "123456789", "iLoveYou", "Master"]); // liste noir des valeurs interdites
+  .oneOf(["Passw0rd", "Password123", "123456789", "iLoveYou", "Master"]) // liste noir des valeurs interdites
+  .is()
+  .not((value, { req, location, path }) => {
+    // Vérifie que le mot de passe ne contient pas d'informations sensibles
+    const username = req.body.username;
+    const email = req.body.email;
+    return (
+      value.includes(username) ||
+      value.includes(email) ||
+      value.toLowerCase().includes("password")
+    );
+  });
 
-  // on exporte le Schema password
+// on exporte le Schema password
 module.exports = passwordSchema;

@@ -1,5 +1,6 @@
 const path = require("path");
 const express = require("express");
+const cors = require("cors");
 const app = express();
 const saucesRoutes = require("./routes/sauces.routes");
 const userRoutes = require("./routes/user.routes");
@@ -26,26 +27,33 @@ require("./config/mongo.config");
 const errorHandler = require("errorhandler");
 // Permet de retourner une page HTML avec tous les détails de l'erreur
 
+app.use(
+  cors({
+    origin: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Accept",
+      "Content",
+      "X-Requested-With",
+      "Origin",
+    ],
+  })
+);
+
 app.use((req, res, next) => {
-  // "Access-Control-Allow-Origin" va permettre au nvaigateur de comparer
   res.setHeader("Access-Control-Allow-Origin", "*");
-  // "Access-Control-Allow-Headers" va contenir tous les headers demandés
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content, Accept, Content-Type, Authorization"
   );
-  // "Access-Control-Allow-Methods" ca contenir la/les méthodes de la/des requête(s) demandé(es)
+
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, DELETE, PATCH, OPTIONS"
   );
-  res.setHeader(
-    // Pour autant que les requête soit autorisée par le serveur,
-    // il va mettre en cache des données pour la durée déterminée afin de ne pas
-    // devoir effectuer une nouvelle requête de type "preflight" (Options) à chaque requête au serveur
-    "Acces-Control-Max-Age",
-    80000
-  );
+  res.setHeader("Acces-Control-Max-Age", 80000);
   next();
 });
 
@@ -71,29 +79,6 @@ app.use((err, req, res, next) => {
       message: err.message,
     });
   }
-  next();
-});
-
-app.use((err, req, res, next) => {
-  console.log(
-    util.inspect(err, {
-      compact: false,
-      depth: 5,
-      breakLength: 80,
-      colors: true,
-    })
-  );
-  res.status(500).redirect("/");
-  next;
-});
-
-app.use((req, res, next) => {
-  console.log("Requête reçue !");
-  next();
-});
-
-app.use((req, res, next) => {
-  res.status(201);
   next();
 });
 

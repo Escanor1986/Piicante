@@ -1,54 +1,106 @@
+const path = require("path");
 const colors = require("colors");
 const Sauce = require("../models/sauces.models");
 const fs = require("fs");
+// Utilisation de la bibliothèque sanitize-html pour nettoyer les entrées utilisateur et éviter les attaques XSS.
+const sanitizeHtml = require("sanitize-html");
+
+const rainbowify = (string) => {
+  // codes de couleur ANSI pour les couleurs de l'arc-en-ciel (rouge, jaune, vert, bleu, violet et cyan).
+  const colors = [
+    "\x1b[31m",
+    "\x1b[33m",
+    "\x1b[32m",
+    "\x1b[34m",
+    "\x1b[35m",
+    "\x1b[36m",
+  ];
+  let rainbowString = "";
+  // parcourt chaque caractère de la chaîne de caractères en utilisant une boucle for et ajoute
+  // à chaque fois le code de couleur correspondant à la position du caractère dans le tableau colors.
+  for (let i = 0; i < string.length; i++) {
+    rainbowString += colors[i % colors.length] + string[i];
+  }
+  return rainbowString;
+};
 
 // Concernant la récupération de TOUTES les sauces *****************************************************
 // *****************************************************************************************************
 
-exports.getAllSauce = (req, res, next) => {
-  Sauce.find()
-    .then((sauces) => res.status(200).json(sauces))
-    .catch((error) => res.status(400).json(colors.red({ error })));
+exports.getAllSauce = async (req, res, next) => {
+  try {
+    const sauces = await Sauce.find();
+    res.status(200).json(sauces);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: "Erreur serveur lors de la récupération des sauces" });
+  }
 };
 
 // Concernant la récupération d'une SEULE sauce ********************************************************
 // *****************************************************************************************************
 
-exports.getOneSauce = (req, res, next) => {
-  Sauce.findOne({ _id: req.params.id })
-    .then((sauces) => res.status(200).json(sauces))
-    .catch((error) => res.status(400).json(colors.red({ error })));
+exports.getOneSauce = async (req, res, next) => {
+  try {
+    const sauce = await Sauce.findById(req.params.id);
+    if (!sauce) {
+      return res.status(404).json({ error: "Sauce non trouvée" });
+    }
+    return res.status(200).json(sauce);
+  } catch (error) {
+    return res.status(500).json({ error: "Impossible de récupérer la sauce" });
+  }
 };
 
 // Concernant la CREATION d'une sauce ******************************************************************
 // *****************************************************************************************************
 
 exports.createSauce = (req, res, next) => {
-  const newSauceObject = JSON.parse(req.body.sauce);
-  if (newSauceObject.userId !== req.auth.userId) {
-    return res.status(403).json(colors.red("⛔ Requête non autorisée ! ⛔"));
-  } else {
-    const sauce = new Sauce({
-      ...newSauceObject,
-      likes: 0,
-      dislikes: 0,
-      usersLiked: [],
-      userDisliked: [],
-      imageUrl: `${req.protocol}://${req.get("host")}/images/${
-        req.file.filename
-      }`,
-    });
-    sauce
-      .save()
-      .then(() => {
-        res
-          .status(201)
-          .json(colors.blue({ message: "Nouvelle sauce créée avec succès !" }));
-      })
-      .catch((error) => {
-        res.status(400).json(colors.red({ error }));
-      });
+  const sauceObject = JSON.parse(req.body.sauce);
+
+  // Vérification que tous les champs obligatoires sont renseignés
+  if (
+    !sauceObject.name ||
+    !sauceObject.manufacturer ||
+    !sauceObject.description ||
+    !sauceObject.mainPepper ||
+    !sauceObject.heat ||
+    !req.file
+  ) {
+    return res
+      .status(400)
+      .json({ error: rainbowify("Tous les champs doivent être renseignés") });
   }
+
+  const sauce = new Sauce({
+    name: sanitizeHtml(sauceObject.name),
+    manufacturer: sanitizeHtml(sauceObject.manufacturer),
+    description: sanitizeHtml(sauceObject.description),
+    mainPepper: sanitizeHtml(sauceObject.mainPepper),
+    heat: sanitizeHtml(sauceObject.heat),
+    likes: 0,
+    dislikes: 0,
+    usersLiked: [],
+    userDisliked: [],
+    imageUrl: `${req.protocol}://${req.get("host")}/images/${
+      req.file.filename
+    }`,
+    userId: req.auth.userId,
+  });
+
+  // Enregistrement de la nouvelle sauce
+  sauce
+    .save()
+    .then(() => {
+      res
+        .status(201)
+        .json({ message: rainbowify("Nouvelle sauce créée avec succès !") });
+    })
+    .catch((error) => {
+      res.status(500).json({ error: error });
+    });
 };
 
 // Concernant la SUPPRESSION d'une sauce **************************************************************
@@ -57,70 +109,81 @@ exports.createSauce = (req, res, next) => {
 exports.deleteSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id })
     .then((sauce) => {
-      if (sauce.userId !== req.auth.userId) {
-        return res
-          .status(403)
-          .json(colors.red("⛔ Requête non autorisée ! ⛔"));
-      } else {
-        const fileName = sauce.imageUrl.split("/images/")[1];
-        fs.unlink(`images/${fileName}`, () => {
-          Sauce.deleteOne({ _id: req.params.id })
-            .then(() =>
-              res
-                .status(200)
-                .json(colors.blue({ message: "Sauce supprimée avec succès !" }))
-            )
-            .catch((error) => res.status(400).json(colors.red({ error })));
-        });
+      if (!sauce) {
+        return res.status(404).json({ error: "Sauce non trouvée" });
       }
+      if (sauce.userId !== req.auth.userId) {
+        return res.status(403).json({ error: "Requête non autorisée !" });
+      }
+      const fileName = sauce.imageUrl.split("/images/")[1];
+      fs.promises
+        .unlink(`images/${fileName}`)
+        .then(() => {
+          return Sauce.deleteOne({ _id: req.params.id });
+        })
+        .then(() => {
+          res.status(200).json({ message: "Sauce supprimée avec succès !" });
+        })
+        .catch((error) => {
+          res.status(500).json({ error: error.message });
+        });
     })
-    .catch((error) => res.status(500).json(colors.red({ error })));
+    .catch((error) => res.status(500).json({ error: error.message }));
 };
 
 // Concernant la MODIFICATION d'une sauce **************************************************************
 // *****************************************************************************************************
 
-exports.modifySauce = (req, res, next) => {
-  Sauce.findOne({ _id: req.params.id }).then((sauce) => {
-    const unModifedProperties = {
-      userId: req.auth.userId,
-      likes: sauce.likes,
-      dislikes: sauce.dislikes,
-      usersLiked: sauce.usersLiked,
-      usersDisliked: sauce.usersDisliked,
-    };
-    if (sauce.userId !== req.auth.userId) {
-      return res.status(403).json(colors.red("⛔ Requête non autorisée ! ⛔"));
-    } else {
-      const fileName = sauce.imageUrl.split("/images/")[1];
-      fs.unlink(`images/${fileName}`, () => {
-        const sauceObject = req.file
-          ? // SI sauceObject = req.file... ALORS...
-            {
-              ...JSON.parse(req.body.sauce),
-              imageUrl: `${req.protocol}://${req.get("host")}/images/${
-                req.file.filename
-              }`,
-              ...unModifedProperties,
-            }
-          : // SI sauceObject != req.file ==> on récupère l'image d'origine du body
-            { ...req.body };
-        Sauce.updateOne(
-          { _id: req.params.id },
-
-          { ...sauceObject, _id: req.params.id }
-        )
-          .then(() =>
-            res.status(201).json(
-              colors.blue({
-                message: "Votre sauce a été modifiée avec succès !",
-              })
-            )
-          )
-          .catch((error) => res.status(400).json(colors.red({ error })));
-      });
+exports.modifySauce = async (req, res, next) => {
+  try {
+    // Récupère la sauce à modifier à partir de son ID
+    const sauce = await Sauce.findById(req.params.id);
+    // Si la sauce n'est pas trouvée, retourne une erreur 404
+    if (!sauce) {
+      return res.status(404).json({ message: "Sauce introuvable" });
     }
-  });
+
+    // Vérifie si l'ID de l'utilisateur authentifié correspond à l'ID de l'utilisateur qui a créé la sauce
+    if (sauce.userId !== req.auth.userId) {
+      return res.status(403).json({ message: "Requête non autorisée !" });
+    }
+
+    // Si une nouvelle image est ajoutée à la requête, supprime l'ancienne image de la sauce
+    if (req.file) {
+      const oldFilename = sauce.imageUrl.split("/images/")[1];
+      await fs.promises.unlink(`images/${oldFilename}`);
+    }
+
+    // Crée un objet qui contient les champs à mettre à jour pour la sauce
+    const sauceObject = req.file
+      ? {
+          ...JSON.parse(req.body.sauce),
+          imageUrl: `${req.protocol}://${req.get("host")}/images/${
+            req.file.filename
+          }`,
+          userId: req.auth.userId,
+          likes: sauce.likes,
+          dislikes: sauce.dislikes,
+          usersLiked: sauce.usersLiked,
+          usersDisliked: sauce.usersDisliked,
+        }
+      : {
+          ...req.body,
+          userId: req.auth.userId,
+          likes: sauce.likes,
+          dislikes: sauce.dislikes,
+          usersLiked: sauce.usersLiked,
+          usersDisliked: sauce.usersDisliked,
+        };
+
+    // Met à jour la sauce dans la base de données avec les nouvelles valeurs
+    await Sauce.updateOne({ _id: req.params.id }, sauceObject);
+    return res.status(200).json({ message: "Sauce modifiée !" });
+  } catch (error) {
+    // Si une erreur se produit, retourne une erreur 500
+    console.log(error);
+    return res.status(500).json({ message: "Erreur interne du serveur" });
+  }
 };
 
 // Concernant les LIKES & DISLIKES d'une sauce **************************************************************

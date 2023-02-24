@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const logError = require("http-errors");
 const User = require("../models/user.models");
 const passwordSchema = require("../config/password.config");
 const emailValidator = require("email-validator");
