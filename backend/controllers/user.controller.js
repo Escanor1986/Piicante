@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 // Utilisation de bcrypt mais nous aurions pu utiliser argon2 également
+// (ou les dexu ensembles, sachant que cela réduirait fortement les performances de la machine)
 const bcrypt = require("bcrypt");
 const User = require("../models/user.models");
 const passwordSchema = require("../config/password.config");
@@ -26,6 +27,11 @@ exports.signup = async (req, res, next) => {
       return res
         .status(400)
         .json({ message: "Email et/ou Password invalide !" });
+    }
+
+    const existingUser = await User.findOne({ email: email });
+    if (existingUser) {
+      return res.status(409).json({ message: "Cet email est déjà utilisé !" });
     }
 
     const salt = await bcrypt.genSalt(10);

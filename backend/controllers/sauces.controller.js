@@ -2,7 +2,7 @@ const path = require("path");
 const colors = require("colors");
 const Sauce = require("../models/sauces.models");
 const fs = require("fs");
-// Utilisation de la bibliothèque sanitize-html pour nettoyer les entrées utilisateur et éviter les attaques XSS.
+// Utilisation de la bibliothèque sanitize-html pour nettoyer les entrées utilisateur et éviter les attaques XSS(Cross-Site Scripting).
 const sanitizeHtml = require("sanitize-html");
 
 const rainbowify = (string) => {
@@ -136,14 +136,10 @@ exports.deleteSauce = (req, res, next) => {
 
 exports.modifySauce = async (req, res, next) => {
   try {
-    // Récupère la sauce à modifier à partir de son ID
     const sauce = await Sauce.findById(req.params.id);
-    // Si la sauce n'est pas trouvée, retourne une erreur 404
     if (!sauce) {
       return res.status(404).json({ message: "Sauce introuvable" });
     }
-
-    // Vérifie si l'ID de l'utilisateur authentifié correspond à l'ID de l'utilisateur qui a créé la sauce
     if (sauce.userId !== req.auth.userId) {
       return res.status(403).json({ message: "Requête non autorisée !" });
     }
@@ -157,8 +153,10 @@ exports.modifySauce = async (req, res, next) => {
     // Crée un objet qui contient les champs à mettre à jour pour la sauce
     const sauceObject = req.file
       ? {
-          ...JSON.parse(req.body.sauce),
+          // Si un fichier est envoyé avec la requête, on crée un nouvel objet avec les champs existants de la sauce
+          ...JSON.parse(req.body.sauce), // On récupère les champs de la sauce existante
           imageUrl: `${req.protocol}://${req.get("host")}/images/${
+            // On ajoute le chemin complet vers l'image téléchargée
             req.file.filename
           }`,
           userId: req.auth.userId,
@@ -168,6 +166,7 @@ exports.modifySauce = async (req, res, next) => {
           usersDisliked: sauce.usersDisliked,
         }
       : {
+          // Si aucun fichier n'est envoyé avec la requête, on crée un nouvel objet avec les champs envoyés dans la requête
           ...req.body,
           userId: req.auth.userId,
           likes: sauce.likes,
@@ -176,11 +175,9 @@ exports.modifySauce = async (req, res, next) => {
           usersDisliked: sauce.usersDisliked,
         };
 
-    // Met à jour la sauce dans la base de données avec les nouvelles valeurs
     await Sauce.updateOne({ _id: req.params.id }, sauceObject);
     return res.status(200).json({ message: "Sauce modifiée !" });
   } catch (error) {
-    // Si une erreur se produit, retourne une erreur 500
     console.log(error);
     return res.status(500).json({ message: "Erreur interne du serveur" });
   }
