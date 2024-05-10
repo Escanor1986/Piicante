@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 // Utilisation de bcrypt mais nous aurions pu utiliser argon2 également
 // (ou les dexu ensembles, sachant que cela réduirait fortement les performances de la machine)
 const bcrypt = require("bcrypt");
+const argon2 = require("argon2");
 const User = require("../models/user.models");
 const passwordSchema = require("../config/password.config");
 const emailValidator = require("email-validator");
